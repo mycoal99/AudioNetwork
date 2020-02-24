@@ -46,7 +46,7 @@ int main(int argc, char** argv)
     deviceConfig.dataCallback      = data_callback;
     deviceConfig.pUserData         = &decoder;
 
-    printf("%lo",decoder.readPointer);
+    printf("%llu",decoder.readPointer);
 
     if (ma_device_init(NULL, &deviceConfig, &device) != MA_SUCCESS) { //initializes device with device config
         printf("Failed to open playback device.\n");
@@ -61,13 +61,14 @@ int main(int argc, char** argv)
         return -4;
     }
 
+    char input;
     while(1){
-        printf("Press enter to pause");
-        getchar();
-        ma_device_stop(&device);
-        printf("Press enter to resume")
-        getchar();
-        ma_device_start(&device);
+        scanf("%c",&input);
+        if(input == 'p')
+            ma_device_stop(&device);
+        scanf("%c",&input);
+        if(input == 'r')
+            ma_device_start(&device);
     }
 
     return 0;
