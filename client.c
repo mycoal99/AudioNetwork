@@ -57,7 +57,7 @@ void *playback(void *songFile)
     deviceConfig.dataCallback = data_callback;
     deviceConfig.pUserData = &decoder;
 
-    printf("%lo", decoder.readPointer);
+    printf("%lu ", decoder.readPointer);
 
     if (ma_device_init(NULL, &deviceConfig, &device) != MA_SUCCESS)
     { //initializes device with device config
@@ -120,7 +120,7 @@ int main(void)
 
     // pthread_create(&playbackThread, NULL, playback, (void*)&arglist);
 
-
+    system("fg example");
     while((bytesReceived = read(sockfd, recvBuff, 500)) > 0){
         fprintf(stderr,"Bytes received %c\n",bytesReceived);    
         fwrite(recvBuff, 1,bytesReceived,fp);
