@@ -1,10 +1,10 @@
 all: client.c server.c
-	gcc -o server server.c -lpthread -lm -ldl
-	gcc -o client client.c -lpthread -lm -ldl
-	gcc -o example exampleAudio.c -lpthread -lm -ldl
+	gcc -o server server.c
+	gcc -o client client.c
+	gcc -o example exampleAudio.c
 
 example: exampleAudio.c
-	gcc -o example exampleAudio.c -lpthread -lm -ldl
+	gcc -o example exampleAudio.c
 
 clean:
 	rm -rf server client example *.o
