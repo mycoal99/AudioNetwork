@@ -36,15 +36,15 @@ int main(void)
         while(1){
             unsigned char buff[500]={0};
             int readCount = fread(buff,1,500,fp);
-            printf("Bytes read %d \n", readCount);        
+            fprintf(stderr, "Bytes read %d \n", readCount);        
 
             if(readCount > 0){
-                printf("Sending \n");
+                fprintf(stderr, "Sending \n");
                 write(connfd, buff, readCount);
             }
             else{
-                printf("Probably done\n");
-                return 1;
+                fprintf(stderr, "Probably done\n");
+                break;
             }
         }
         close(connfd);
