@@ -120,7 +120,7 @@ int main(void)
 
     // pthread_create(&playbackThread, NULL, playback, (void*)&arglist);
 
-    system("fg example");
+    // system("fg example");
     while((bytesReceived = read(sockfd, recvBuff, 500)) > 0){
         fprintf(stderr,"Bytes received %c\n",bytesReceived);    
         fwrite(recvBuff, 1,bytesReceived,fp);
