@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     if (result != MA_SUCCESS) {
         return -2;
     }
-    
+
     deviceConfig = ma_device_config_init(ma_device_type_playback);
     deviceConfig.playback.format   = decoder.outputFormat;
     deviceConfig.playback.channels = decoder.outputChannels;
@@ -46,24 +46,29 @@ int main(int argc, char** argv)
     deviceConfig.dataCallback      = data_callback;
     deviceConfig.pUserData         = &decoder;
 
-    if (ma_device_init(NULL, &deviceConfig, &device) != MA_SUCCESS) {
+    printf("%lo",decoder.readPointer);
+
+    if (ma_device_init(NULL, &deviceConfig, &device) != MA_SUCCESS) { //initializes device with device config
         printf("Failed to open playback device.\n");
         ma_decoder_uninit(&decoder);
         return -3;
     }
 
-    if (ma_device_start(&device) != MA_SUCCESS) {
+    if (ma_device_start(&device) != MA_SUCCESS) { //starts playback
         printf("Failed to start playback device.\n");
         ma_device_uninit(&device);
         ma_decoder_uninit(&decoder);
         return -4;
     }
 
-    printf("Press Enter to quit...");
-    getchar();
-
-    ma_device_uninit(&device);
-    ma_decoder_uninit(&decoder);
+    while(1){
+        printf("Press enter to pause");
+        getchar();
+        ma_device_stop(&device);
+        printf("Press enter to resume")
+        getchar();
+        ma_device_start(&device);
+    }
 
     return 0;
 }
