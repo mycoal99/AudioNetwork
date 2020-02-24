@@ -30,7 +30,7 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 
 void *playback(void *songFile)
 {
-    Sleep(5);
+    sleep(5);
     char* argv;
     argv = (char *)songFile;
     ma_result result;
@@ -110,19 +110,23 @@ int main(void)
         return 1;
     }
 
-    pthread_t playbackThread;
-    const char* arglist = malloc(42);
-    arglist = "pink_panther.mp3";
+    if (!fork()) {
+        char * argv_list[] = {"./example", "pink_panther.mp3", NULL};
+        execv("./example", argv_list);
+    }
+    // pthread_t playbackThread;
+    // const char* arglist = malloc(42);
+    // arglist = "pink_panther.mp3";
 
-    pthread_create(&playbackThread, NULL, playback, (void*)&arglist);
+    // pthread_create(&playbackThread, NULL, playback, (void*)&arglist);
 
 
     while((bytesReceived = read(sockfd, recvBuff, 500)) > 0){
-        printf("Bytes received %c\n",bytesReceived);    
+        fprintf(stderr,"Bytes received %c\n",bytesReceived);    
         fwrite(recvBuff, 1,bytesReceived,fp);
-        printf("%s\n", recvBuff);
+        fprintf(stderr,"%s\n", recvBuff);
     }
 
-    pthread_join(playbackThread, NULL);
+    // fprintf(stderr, "%d",pthread_join(playbackThread, NULL));
     return 0;
 }

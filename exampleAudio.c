@@ -65,7 +65,7 @@ int main(int argc, char** argv)
         printf("Press enter to pause");
         getchar();
         ma_device_stop(&device);
-        printf("Press enter to resume")
+        printf("Press enter to resume");
         getchar();
         ma_device_start(&device);
     }
