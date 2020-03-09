@@ -114,6 +114,7 @@ int main(void)
         return 1;
     }
 
+    //Initialize variables used for while delay loop
     char* timeBuff = calloc(1,8);
     char** ptr = &timeBuff;
     bytesReceived = read(sockfd, timeBuff, sizeof(timeBuff));
@@ -128,6 +129,7 @@ int main(void)
         timeOfDay = ((time.tv_sec * 1000) + (time.tv_usec / 1000))%10000; //Modulo used to simplify the timestamp
         printf("Time of day = %li\n",timeOfDay);
     }
+    
     //Playback begins
     if (!fork()){
         char* argv_list[] = {"./example", "test.mp3", NULL} ;
