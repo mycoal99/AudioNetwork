@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/time.h>
 #include <pthread.h>
 #define DR_FLAC_IMPLEMENTATION
 #include "./extras/dr_flac.h" /* Enables FLAC decoding. */
@@ -91,40 +92,58 @@ int main(void)
 {
     int sockfd = 0, bytesReceived = 0;
     char recvBuff[500];
+    char byteBuff[1];
     memset(recvBuff, '0', sizeof(recvBuff));
     struct sockaddr_in serv_addr;
+    struct timeval time;
+
 
     if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0){
         printf("Could not create socket\n");
         return 1;
     }
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(8080); // port
+    serv_addr.sin_port = htons(8080); //Port num.
     serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
 
-    FILE *fp;
+    FILE* fp;
     fp = fopen("test.mp3", "w"); 
     if(NULL == fp){
         printf("Unable to open file");
         return 1;
     }
 
-    if (!fork()) {
-        char * argv_list[] = {"./example", "pink_panther.mp3", NULL};
+    char* timeBuff = calloc(1,8);
+    char** ptr = &timeBuff;
+    bytesReceived = read(sockfd, timeBuff, sizeof(timeBuff));
+    printf("%s\n",timeBuff);
+    long int startTime = strtol(timeBuff, ptr, 10);
+    long int timeOfDay = -1; 
+
+    //Program waits until calculated delay time stamp from server
+    printf("Start time = %li\n",startTime);
+    while(timeOfDay != startTime){
+        gettimeofday(&time,NULL);
+        timeOfDay = ((time.tv_sec * 1000) + (time.tv_usec / 1000))%10000; //Modulo used to simplify the timestamp
+        printf("Time of day = %li\n",timeOfDay);
+    }
+    //Playback begins
+    if (!fork()){
+        char* argv_list[] = {"./example", "test.mp3", NULL} ;
         execv("./example", argv_list);
     }
+
+    //Write song to file.
+    while((bytesReceived = read(sockfd, recvBuff, 500)) > 0){
+        fwrite(recvBuff,1,bytesReceived,fp);
+    }
+
     // pthread_t playbackThread;
     // const char* arglist = malloc(42);
     // arglist = "pink_panther.mp3";
-
     // pthread_create(&playbackThread, NULL, playback, (void*)&arglist);
-
-
-    while((bytesReceived = read(sockfd, recvBuff, 500)) > 0){
-        fwrite(recvBuff, 1,bytesReceived,fp);
-    }
-
+    
     // fprintf(stderr, "%d",pthread_join(playbackThread, NULL));
     return 0;
 }

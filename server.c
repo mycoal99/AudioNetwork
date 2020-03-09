@@ -4,15 +4,18 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-
+#include <sys/time.h>
+#include <math.h>
 
 int main(void)
 {
     int listenfd = 0;
     int connfd = 0;
+    int written = 0;
     struct sockaddr_in serv_addr;
-    char sendBuff[1024];
-    int numrv;
+    unsigned char sendBuff[500];
+
+    struct timeval time;
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -29,18 +32,33 @@ int main(void)
 
     while(1){
         connfd = accept(listenfd, (struct sockaddr*)NULL ,NULL);
-
         FILE *fp; 
         fp = fopen("pink_panther.mp3","rb");
 
-        while(1){
-            unsigned char buff[500]={0};
-            int readCount = fread(buff,1,500,fp);
-            fprintf(stderr, "Bytes read %d \n", readCount);        
+        //TODO: Calculate start time that starts playback on all slave devices.
 
+        gettimeofday(&time,NULL);
+        long int ms = ((time.tv_sec * 1000) + (time.tv_usec / 1000) + 1000)%10000; //Modulo used to simplify the timestamp
+        char* timeBuff = calloc(1,8);
+
+        printf("%lu\n",sizeof(timeBuff[0]));
+        sprintf(timeBuff,"%li",ms);
+
+        fprintf(stderr, "Sending start time stamp: %li\n",ms);  
+
+        int timeSize = sizeof(timeBuff[0]);
+        int written = 0;
+        while(timeSize > 0){
+            written = write(connfd,timeBuff,sizeof(timeBuff));
+            timeSize -= written; 
+        } 
+        while(1){
+            unsigned char sendBuff[500]= {0};
+            int readCount = fread(sendBuff,1,500,fp); 
+            fprintf(stderr, "Bytes read %d \n", readCount);
             if(readCount > 0){
                 fprintf(stderr, "Sending \n");
-                write(connfd, buff, readCount);
+                write(connfd, sendBuff, readCount);
             }
             else{
                 fprintf(stderr, "Probably done\n");
@@ -50,7 +68,6 @@ int main(void)
         close(connfd);
         sleep(1);
     }
-
 
     return 0;
 }
