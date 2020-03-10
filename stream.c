@@ -94,6 +94,7 @@ int main(int argc, char* argv[]) {
         printf("incorrect usage\nCorrect Usage: \'./stream <filename>\'");
     }
 
+    char done[1] = "q";
     int sockfd = 0, bytesReceived = 0;
     char recvBuff[500];
     memset(recvBuff, '0', sizeof(recvBuff));
@@ -104,7 +105,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(8080); // port
+    serv_addr.sin_port = htons(8081); // port
     serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
 
@@ -121,4 +122,7 @@ int main(int argc, char* argv[]) {
         // printf("%s\n", recvBuff);
     }
 
+    write(sockfd, done, 1);
+
+    return 0;
 }

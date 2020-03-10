@@ -45,7 +45,7 @@ int main(void)
     //     printf("Time of day = %li\n",timeOfDay);
     // }
 
-    sleep(5);
+    sleep(1);
 
     ma_result result;
     ma_decoder decoder;
@@ -64,7 +64,7 @@ int main(void)
     deviceConfig.dataCallback      = data_callback;
     deviceConfig.pUserData         = &decoder;
 
-    printf("%llu",decoder.readPointer);
+    printf("%llu\n",decoder.readPointer);
 
     if (ma_device_init(NULL, &deviceConfig, &device) != MA_SUCCESS) { //initializes device with device config
         printf("Failed to open playback device.\n");
@@ -82,11 +82,15 @@ int main(void)
     char input;
     while(1){
         scanf("%c",&input);
-        if(input == 'p')
+        if(input == 'p') {
             ma_device_stop(&device);
-        scanf("%c",&input);
-        if(input == 'r')
+        }
+        printf("HALP\n");
+        // scanf("%c",&input);
+        if(input == 'r') {
             ma_device_start(&device);
+        }
+
     }
 
     // pthread_t playbackThread;
