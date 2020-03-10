@@ -8,18 +8,18 @@
 
 int main(void)
 {
-    int listenfd[100];
-    int connfd[100];
-    struct sockaddr_in serv_addr[100];
-    printf("hello There\n");
-    char sendBuff[100][1024];
+    int listenfd[10];
+    int connfd[10];
+    struct sockaddr_in serv_addr[10];
+    // printf("hello There\n");
+    char sendBuff[10][1024];
     int numrv;
     int numConnections = 0;
-    while(numConnections<100) {
+    while(numConnections<10) {
         
 
         listenfd[numConnections] = socket(AF_INET, SOCK_STREAM, 0);
-        printf("General Kenobi\n");
+        // printf("General Kenobi\n");
 
         memset(&serv_addr[numConnections], '0', sizeof(serv_addr[numConnections]));
         memset(sendBuff[numConnections], '0', sizeof(sendBuff[numConnections]));
@@ -29,7 +29,8 @@ int main(void)
         serv_addr[numConnections].sin_port = htons(8080);
 
         bind(listenfd[numConnections], (struct sockaddr*)&serv_addr[numConnections],sizeof(serv_addr[numConnections]));
-        listen(listenfd[numConnections], 10);
+        while (listen(listenfd[numConnections], 10) != 0)
+            continue;
 
         if (!fork()) {
             while(1){
@@ -54,11 +55,12 @@ int main(void)
                 }
                 close(connfd[numConnections]);
                 sleep(1);
+                return 0;
             }
         } else numConnections++;
 
     }
-    if (numConnections == 100)
+    if (numConnections == 10)
         sleep(60);
 
 
