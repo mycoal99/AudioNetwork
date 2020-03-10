@@ -19,28 +19,29 @@ int main(void)
         
 
         listenfd[numConnections] = socket(AF_INET, SOCK_STREAM, 0);
-        // printf("General Kenobi\n");
+        printf("General Kenobi\n");
 
         memset(&serv_addr[numConnections], '0', sizeof(serv_addr[numConnections]));
         memset(sendBuff[numConnections], '0', sizeof(sendBuff[numConnections]));
 
         serv_addr[numConnections].sin_family = AF_INET;
         serv_addr[numConnections].sin_addr.s_addr = htonl(INADDR_ANY);
-        serv_addr[numConnections].sin_port = htons(8080);
+        serv_addr[numConnections].sin_port = htons(8081);
 
         bind(listenfd[numConnections], (struct sockaddr*)&serv_addr[numConnections],sizeof(serv_addr[numConnections]));
-        while (listen(listenfd[numConnections], 10) != 0)
-            continue;
+        setsockopt(listenfd[numConnections], SOL_SOCKET, SO_REUSEPORT, &(int){1}, sizeof(int));
+        listen(listenfd[numConnections], 10);
+        connfd[numConnections] = accept(listenfd[numConnections], (struct sockaddr*)NULL ,NULL);
 
         if (!fork()) {
             while(1){
-                connfd[numConnections] = accept(listenfd[numConnections], (struct sockaddr*)NULL ,NULL);
-
+                
                 FILE *fp; 
                 fp = fopen("pink_panther.mp3","rb");
 
                 while(1){
                     unsigned char buff[500]={0};
+                    char done[1] = {0};
                     int readCount = fread(buff,1,500,fp);
                     printf("Bytes read %d \n", readCount);        
 
@@ -50,7 +51,13 @@ int main(void)
                     }
                     else{
                         printf("Probably done\n");
-                        return 1;
+                        read(connfd[numConnections], done, 1);
+                        printf("%s\n", done);
+                        if (!strcmp(done, "q")) {
+                            close(connfd[numConnections]);
+                            sleep(1);
+                            return 0;
+                        } else continue;
                     }
                 }
                 close(connfd[numConnections]);

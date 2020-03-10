@@ -32,7 +32,8 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 
 int main(void)
 {
-    if (!fork()){
+    int PID = fork();
+    if (!PID){
         char* argv_list[] = {"./stream", "test.mp3", NULL} ;
         execv("./stream", argv_list);
     }   
@@ -45,7 +46,7 @@ int main(void)
     //     printf("Time of day = %li\n",timeOfDay);
     // }
 
-    sleep(5);
+    sleep(1);
 
     ma_result result;
     ma_decoder decoder;
@@ -64,7 +65,7 @@ int main(void)
     deviceConfig.dataCallback      = data_callback;
     deviceConfig.pUserData         = &decoder;
 
-    printf("%llu",decoder.readPointer);
+    printf("%llu\n",decoder.readPointer);
 
     if (ma_device_init(NULL, &deviceConfig, &device) != MA_SUCCESS) { //initializes device with device config
         printf("Failed to open playback device.\n");
@@ -82,11 +83,31 @@ int main(void)
     char input;
     while(1){
         scanf("%c",&input);
-        if(input == 'p')
+        if(input == 'p') {
             ma_device_stop(&device);
-        scanf("%c",&input);
-        if(input == 'r')
+        }
+        printf("HALP\n");
+        // scanf("%c",&input);
+        if(input == 'r') {
             ma_device_start(&device);
+        }
+        if(input == 'u') {
+            float up;
+            ma_device_get_master_volume(&device, &up);
+            up += 0.1;
+            if (up > 1)
+                up = 1;
+            ma_device_set_master_volume(&device, up);
+        }
+        if(input == 'd') {
+            float down;
+            ma_device_get_master_volume(&device, &down);
+            down -= 0.1;
+            if (down < 0)
+                down = 0;
+            ma_device_set_master_volume(&device, down);
+        }
+
     }
 
     // pthread_t playbackThread;
