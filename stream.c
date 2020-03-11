@@ -125,6 +125,7 @@ int main(int argc, char* argv[]) {
         // printf("%s\n", recvBuff);
     }
 
+    printf("%s", done);
     write(sockfd, done, 1);
 
     return 0;

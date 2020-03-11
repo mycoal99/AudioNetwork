@@ -32,7 +32,8 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 
 int main(void)
 {
-    if (!fork()){
+    int PID = fork();
+    if (!PID){
         char* argv_list[] = {"./stream", "test.mp3", NULL} ;
         execv("./stream", argv_list);
     }   
@@ -89,6 +90,22 @@ int main(void)
         // scanf("%c",&input);
         if(input == 'r') {
             ma_device_start(&device);
+        }
+        if(input == 'u') {
+            float up;
+            ma_device_get_master_volume(&device, &up);
+            up += 0.1;
+            if (up > 1)
+                up = 1;
+            ma_device_set_master_volume(&device, up);
+        }
+        if(input == 'd') {
+            float down;
+            ma_device_get_master_volume(&device, &down);
+            down -= 0.1;
+            if (down < 0)
+                down = 0;
+            ma_device_set_master_volume(&device, down);
         }
 
     }
