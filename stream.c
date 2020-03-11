@@ -105,9 +105,12 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(8081); // port
-    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
+    for (int i = 0; i < 10; i++) {
+        serv_addr.sin_port = htons(8081 + i); // port
+        serv_addr.sin_addr.s_addr = inet_addr("169.231.125.241");
+        if (!connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)))
+            break;
+    }
 
     FILE *fp;
     fp = fopen("test.mp3", "w"); 
