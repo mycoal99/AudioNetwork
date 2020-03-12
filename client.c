@@ -32,9 +32,14 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 
 int main(void)
 {
+    int fd[2];
+    pipe(fd);
+    char pipefd[12];
+    snprintf(pipefd,12,"%i",fd[0]);
+
     int PID = fork();
     if (!PID){
-        char* argv_list[] = {"./stream", "test.mp3", NULL} ;
+        char* argv_list[] = {"./stream", "test.mp3", pipefd, NULL} ;
         execv("./stream", argv_list);
     }   
 
@@ -46,7 +51,7 @@ int main(void)
     //     printf("Time of day = %li\n",timeOfDay);
     // }
 
-    sleep(1);
+    sleep(5);
 
     ma_result result;
     ma_decoder decoder;
@@ -86,8 +91,6 @@ int main(void)
         if(input == 'p') {
             ma_device_stop(&device);
         }
-        printf("HALP\n");
-        // scanf("%c",&input);
         if(input == 'r') {
             ma_device_start(&device);
         }
@@ -106,6 +109,14 @@ int main(void)
             if (down < 0)
                 down = 0;
             ma_device_set_master_volume(&device, down);
+        }
+        if(input == 'q') {
+            write(fd[1], &input, sizeof(&input));
+            ma_device_uninit(&device);
+            ma_decoder_uninit(&decoder);
+            close(fd[0]);
+            close(fd[1]);
+            break;
         }
 
     }

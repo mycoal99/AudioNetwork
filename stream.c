@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <pthread.h>
+#include <errno.h>
 #define DR_FLAC_IMPLEMENTATION
 #include "./extras/dr_flac.h" /* Enables FLAC decoding. */
 #define DR_MP3_IMPLEMENTATION
@@ -90,11 +91,13 @@
 
 int main(int argc, char* argv[]) {
 
-    if (argc != 2) {
+    if (argc != 3) {
         printf("incorrect usage\nCorrect Usage: \'./stream <filename>\'");
     }
 
-    char done[1] = "q";
+    int pipefd = atoi(argv[2]);
+    char done[2];
+    int portOffset = 0;
     int sockfd = 0, bytesReceived = 0;
     char recvBuff[500];
     memset(recvBuff, '0', sizeof(recvBuff));
@@ -105,7 +108,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(8081); // port
+    serv_addr.sin_port = htons(8084); // port
+    // serv_addr.sin_addr.s_addr = inet_addr("169.231.119.199");
     serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
 
@@ -119,11 +123,15 @@ int main(int argc, char* argv[]) {
     while((bytesReceived = read(sockfd, recvBuff, 500)) > 0){
         // printf("Bytes received %c\n",bytesReceived);    
         fwrite(recvBuff, 1,bytesReceived,fp);
-        // printf("%s\n", recvBuff);
+        if (bytesReceived < 500)
+            break;
     }
 
-    printf("%s", done);
-    write(sockfd, done, 1);
+    bzero(done, sizeof(done));
+    read(pipefd, &done, 2);
+    write(sockfd, &done, 2);
+
+    close(sockfd);
 
     return 0;
 }

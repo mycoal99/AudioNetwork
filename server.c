@@ -8,32 +8,35 @@
 
 int main(void)
 {
-    int listenfd[10];
+    int listenfd;
     int connfd[10];
-    struct sockaddr_in serv_addr[10];
+    struct sockaddr_in serv_addr;
     // printf("hello There\n");
-    char sendBuff[10][1024];
+    char sendBuff[1024];
     int numrv;
     int numConnections = 0;
-    while(numConnections<10) {
         
 
-        listenfd[numConnections] = socket(AF_INET, SOCK_STREAM, 0);
-        printf("General Kenobi\n");
+    listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
-        memset(&serv_addr[numConnections], '0', sizeof(serv_addr[numConnections]));
-        memset(sendBuff[numConnections], '0', sizeof(sendBuff[numConnections]));
+    memset(&serv_addr, '0', sizeof(serv_addr));
+    memset(sendBuff, '0', sizeof(sendBuff));
 
-        serv_addr[numConnections].sin_family = AF_INET;
-        serv_addr[numConnections].sin_addr.s_addr = htonl(INADDR_ANY);
-        serv_addr[numConnections].sin_port = htons(8081);
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serv_addr.sin_port = htons(8084);
 
-        bind(listenfd[numConnections], (struct sockaddr*)&serv_addr[numConnections],sizeof(serv_addr[numConnections]));
-        setsockopt(listenfd[numConnections], SOL_SOCKET, SO_REUSEPORT, &(int){1}, sizeof(int));
-        listen(listenfd[numConnections], 10);
-        connfd[numConnections] = accept(listenfd[numConnections], (struct sockaddr*)NULL ,NULL);
+    bind(listenfd, (struct sockaddr*)&serv_addr,sizeof(serv_addr));
+    setsockopt(listenfd, SOL_SOCKET, SO_REUSEPORT, &(int){1}, sizeof(int));
+    listen(listenfd, 10);
 
-        if (!fork()) {
+    while(numConnections<10) {
+        connfd[numConnections] = accept(listenfd, (struct sockaddr*)NULL ,NULL);
+
+        int PID = fork();
+        int childConnfd = connfd[numConnections];
+        int numChildfd = numConnections;
+        if (PID == 0) {
             while(1){
                 
                 FILE *fp; 
@@ -41,30 +44,42 @@ int main(void)
 
                 while(1){
                     unsigned char buff[500]={0};
-                    char done[1] = {0};
+                    char done[2];
                     int readCount = fread(buff,1,500,fp);
-                    printf("Bytes read %d \n", readCount);        
+                    // printf("Bytes read %d \n", readCount);        
 
                     if(readCount > 0){
-                        printf("Sending \n");
-                        write(connfd[numConnections], buff, readCount);
+                        // printf("Sending \n");
+                        write(childConnfd, buff, readCount);
                     }
                     else{
-                        printf("Probably done\n");
-                        read(connfd[numConnections], done, 1);
-                        printf("%s\n", done);
+                        // printf("Probably done\n");
+                        fprintf(stderr, "made it to read!\n");
+                        // fprintf(stderr, "%d\n", numConnections);
+                        read(childConnfd, done, sizeof(done));
+                        fprintf(stderr,"Passed Read\n");
                         if (!strcmp(done, "q")) {
-                            close(connfd[numConnections]);
+                            fprintf(stderr,"Connection %d closing.\n", numChildfd);
+                            close(childConnfd);
                             sleep(1);
                             return 0;
-                        } else continue;
+                        }
+                        else {
+                            continue;
+                        }
+                        break;
                     }
                 }
-                close(connfd[numConnections]);
+                numConnections--;
+                close(childConnfd);
                 sleep(1);
                 return 0;
             }
-        } else numConnections++;
+        }
+        else {
+            numConnections++;
+            continue;
+        }
 
     }
     if (numConnections == 10)

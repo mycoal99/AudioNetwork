@@ -11,4 +11,4 @@ stream: stream.c
 	gcc -o stream stream.c
 
 clean:
-	rm -f client server example stream *.o
+	rm -f test.mp3 client server example stream *.o
