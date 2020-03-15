@@ -109,8 +109,8 @@ int main(int argc, char* argv[]) {
     }
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(8084); // port
-    // serv_addr.sin_addr.s_addr = inet_addr("169.231.119.199");
-    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    serv_addr.sin_addr.s_addr = inet_addr("169.231.11.137");
+    // serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
 
     FILE *fp;
@@ -120,11 +120,12 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    while((bytesReceived = read(sockfd, recvBuff, 500)) > 0){
-        // printf("Bytes received %c\n",bytesReceived);    
+    while(1) {
+        // printf("Bytes received %c\n",bytesReceived);
+        bytesReceived = read(sockfd, recvBuff, 500);   
         fwrite(recvBuff, 1,bytesReceived,fp);
-        if (bytesReceived < 500)
-            break;
+        // if (bytesReceived < 500)
+        //     break;
     }
 
     bzero(done, sizeof(done));

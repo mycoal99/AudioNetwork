@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <pthread.h>
+#include <sched.h>
 #define DR_FLAC_IMPLEMENTATION
 #include "./extras/dr_flac.h" /* Enables FLAC decoding. */
 #define DR_MP3_IMPLEMENTATION
@@ -51,6 +52,7 @@ int main(void)
     //     printf("Time of day = %li\n",timeOfDay);
     // }
 
+    sched_yield();
     sleep(5);
 
     ma_result result;
@@ -116,6 +118,7 @@ int main(void)
             ma_decoder_uninit(&decoder);
             close(fd[0]);
             close(fd[1]);
+            remove("test.mp3");
             break;
         }
 

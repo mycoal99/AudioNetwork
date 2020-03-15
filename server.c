@@ -1,4 +1,5 @@
 #include <sys/socket.h>
+#include <netdb.h>
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,6 +20,9 @@ int main(void)
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
+    int iSetOption = 1;
+    setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, (char*)&iSetOption, sizeof(iSetOption));
+
     memset(&serv_addr, '0', sizeof(serv_addr));
     memset(sendBuff, '0', sizeof(sendBuff));
 
@@ -27,10 +31,9 @@ int main(void)
     serv_addr.sin_port = htons(8084);
 
     bind(listenfd, (struct sockaddr*)&serv_addr,sizeof(serv_addr));
-    setsockopt(listenfd, SOL_SOCKET, SO_REUSEPORT, &(int){1}, sizeof(int));
     listen(listenfd, 10);
 
-    while(numConnections<10) {
+    while(1) {
         connfd[numConnections] = accept(listenfd, (struct sockaddr*)NULL ,NULL);
 
         int PID = fork();
@@ -40,9 +43,11 @@ int main(void)
             while(1){
                 
                 FILE *fp; 
-                fp = fopen("pink_panther.mp3","rb");
+                fp = fopen("00602567992424_007_100 Miles and Running_USUM71815294.mp3","rb");
 
                 while(1){
+                    // char buffFinished[4];
+                    // snprintf(buffFinished, 4, "xyz");
                     unsigned char buff[500]={0};
                     char done[2];
                     int readCount = fread(buff,1,500,fp);
@@ -51,23 +56,31 @@ int main(void)
                     if(readCount > 0){
                         // printf("Sending \n");
                         write(childConnfd, buff, readCount);
+                        continue;
                     }
                     else{
-                        // printf("Probably done\n");
                         fprintf(stderr, "made it to read!\n");
-                        // fprintf(stderr, "%d\n", numConnections);
-                        read(childConnfd, done, sizeof(done));
-                        fprintf(stderr,"Passed Read\n");
-                        if (!strcmp(done, "q")) {
-                            fprintf(stderr,"Connection %d closing.\n", numChildfd);
-                            close(childConnfd);
-                            sleep(1);
-                            return 0;
-                        }
-                        else {
-                            continue;
-                        }
-                        break;
+                        numConnections--;
+                        close(childConnfd);
+                        sleep(1);
+                        return 0;
+                        // // fprintf(stderr, "%s\n", buffFinished);
+                        // // fprintf(stderr, "reached write q, size: %d\n", sizeof(buffFinished));
+                        // // write(childConnfd, buffFinished, sizeof(buffFinished));
+                        // fprintf(stderr, "made it to read!\n");
+                        // // fprintf(stderr, "%d\n", numConnections);
+                        // read(childConnfd, done, sizeof(done));
+                        // fprintf(stderr,"Passed Read\n");
+                        // if (!strcmp(done, "q")) {
+                        //     fprintf(stderr,"Connection %d closing.\n", numChildfd);
+                        //     close(childConnfd);
+                        //     sleep(1);
+                        //     return 0;
+                        // }
+                        // else {
+                        //     continue;
+                        // }
+                        // break;
                     }
                 }
                 numConnections--;
@@ -77,6 +90,7 @@ int main(void)
             }
         }
         else {
+            fprintf(stderr, "listening thread incrementing\n");
             numConnections++;
             continue;
         }
