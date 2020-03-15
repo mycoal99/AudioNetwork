@@ -5,18 +5,20 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/time.h>
+
 
 
 int main(void)
 {
     int listenfd;
-    int connfd[10];
+    int connfd;
     struct sockaddr_in serv_addr;
-    // printf("hello There\n");
     char sendBuff[1024];
     int numrv;
     int numConnections = 0;
-        
+    struct timeval time;
+
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -35,27 +37,44 @@ int main(void)
 
     while(1) {
         // Waits until connection is made, and then creates new connection
-        connfd[numConnections] = accept(listenfd, (struct sockaddr*)NULL ,NULL);
+        connfd = accept(listenfd, (struct sockaddr*)NULL ,NULL);
 
         // Creates child process and copies over the connection to a variable local to the child
         int PID = fork();
-        int childConnfd = connfd[numConnections];
-        int numChildfd = numConnections;
+        int childConnfd = connfd;
 
         //Child does server work while parent goes back to listening.
         if (PID == 0) {
             while(1){
-                
+
                 //Open source audio file TODO: make it command line arg of client.
                 FILE *fp; 
                 fp = fopen("00602567992424_007_100 Miles and Running_USUM71815294.mp3","rb");
 
+                gettimeofday(&time,NULL);
+                long int ms = ((time.tv_sec * 1000) + (time.tv_usec / 1000) + 4000)%10000; //Modulo used to simplify the timestamp
+                char* timeBuff = calloc(1,8);
+
+                // Convert LI to char*
+                printf("%lu\n",sizeof(timeBuff[0]));
+                sprintf(timeBuff,"%li",ms);
+
+                fprintf(stderr, "Sending start time stamp: %li\n",ms);  
+
+                int timeSize = sizeof(timeBuff[0]);
+                int written = 0;
+
+                //Write entire time packet
+                while(timeSize > 0){
+                    written = write(connfd,timeBuff,sizeof(timeBuff));
+                    timeSize -= written; 
+                } 
 
                 //Read in bytes from audio file and store number of bytes read in readCount
                 while(1){
                     // char buffFinished[4];
                     // snprintf(buffFinished, 4, "xyz");
-                    unsigned char buff[500]={0};
+                    unsigned char buff[500] = {0};
                     char done[2];
                     int readCount = fread(buff,1,500,fp);
                     // printf("Bytes read %d \n", readCount);        
@@ -110,32 +129,6 @@ int main(void)
     //If 10 connections it won't accept connections for 60 seconds (wait for one of them to timeout.)
     if (numConnections == 10)
         sleep(60);
-
-
-    // while(1){
-    //     connfd = accept(listenfd, (struct sockaddr*)NULL ,NULL);
-
-    //     FILE *fp; 
-    //     fp = fopen("pink_panther.mp3","rb");
-
-    //     while(1){
-    //         unsigned char buff[500]={0};
-    //         int readCount = fread(buff,1,500,fp);
-    //         printf("Bytes read %d \n", readCount);        
-
-    //         if(readCount > 0){
-    //             printf("Sending \n");
-    //             write(connfd, buff, readCount);
-    //         }
-    //         else{
-    //             printf("Probably done\n");
-    //             return 1;
-    //         }
-    //     }
-    //     close(connfd);
-    //     sleep(1);
-    // }
-
 
     return 0;
 }

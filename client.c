@@ -38,6 +38,7 @@ int main(void)
     pipe(fd);
     char pipefd[12];
     snprintf(pipefd,12,"%i",fd[0]);
+    struct timeval time;
 
     //create child process and have it execute stream.c
     int PID = fork();
@@ -46,18 +47,24 @@ int main(void)
         execv("./stream", argv_list);
     }   
 
-    //Program waits until calculated delay time stamp from server
-    // printf("Start time = %li\n",startTime);
-    // while(timeOfDay != startTime){
-    //     gettimeofday(&time,NULL);
-    //     timeOfDay = ((time.tv_sec * 1000) + (time.tv_usec / 1000))%10000; //Modulo used to simplify the timestamp
-    //     printf("Time of day = %li\n",timeOfDay);
-    // }
-
-    //client process yields to stream process
+    //client process yields to stream process, ensuring at least something is written 
     sched_yield();
-    //sleep to make sure file is partially written before read begins
-    sleep(5);
+
+    //sleep to make sure file is partially written before read begins, replace with start time
+    char* timeBuff = calloc(1,8);
+    char** ptr = &timeBuff;
+    bytesReceived = read(sockfd, timeBuff, sizeof(timeBuff));
+    printf("%s\n",timeBuff);
+    long int startTime = strtol(timeBuff, ptr, 10);
+    long int timeOfDay = -1; 
+
+    //Program waits until calculated delay time stamp from server
+    printf("Start time = %li\n",startTime);
+    while(timeOfDay != startTime){
+        gettimeofday(&time,NULL);
+        timeOfDay = ((time.tv_sec * 1000) + (time.tv_usec / 1000))%10000; //Modulo used to simplify the timestamp
+        printf("Time of day = %li\n",timeOfDay);
+    }
 
     //this is all the example stuff that does playback
     ma_result result;
@@ -96,13 +103,13 @@ int main(void)
     char input;
     while(1){
         scanf("%c",&input);
-        if(input == 'p') {
+        if(input == 'p') { //pause
             ma_device_stop(&device);
         }
-        if(input == 'r') {
+        if(input == 'r') { //resume
             ma_device_start(&device);
         }
-        if(input == 'u') {
+        if(input == 'u') { //volume up
             float up;
             ma_device_get_master_volume(&device, &up);
             up += 0.1;
@@ -110,7 +117,7 @@ int main(void)
                 up = 1;
             ma_device_set_master_volume(&device, up);
         }
-        if(input == 'd') {
+        if(input == 'd') { //volume down
             float down;
             ma_device_get_master_volume(&device, &down);
             down -= 0.1;
@@ -118,7 +125,7 @@ int main(void)
                 down = 0;
             ma_device_set_master_volume(&device, down);
         }
-        if(input == 'q') {
+        if(input == 'q') { //quit
             write(fd[1], &input, sizeof(&input));
             ma_device_uninit(&device);
             ma_decoder_uninit(&decoder);
@@ -127,14 +134,7 @@ int main(void)
             remove("test.mp3");
             break;
         }
-
     }
 
-    // pthread_t playbackThread;
-    // const char* arglist = malloc(42);
-    // arglist = "test.mp3";
-    // pthread_create(&playbackThread, NULL, playback, (void*)&arglist);
-    
-    // fprintf(stderr, "%d",pthread_join(playbackThread, NULL));
     return 0;
 }
