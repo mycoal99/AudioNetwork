@@ -33,11 +33,13 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 
 int main(void)
 {
+    //create vars for communicating with stream.c
     int fd[2];
     pipe(fd);
     char pipefd[12];
     snprintf(pipefd,12,"%i",fd[0]);
 
+    //create child process and have it execute stream.c
     int PID = fork();
     if (!PID){
         char* argv_list[] = {"./stream", "test.mp3", pipefd, NULL} ;
@@ -52,9 +54,12 @@ int main(void)
     //     printf("Time of day = %li\n",timeOfDay);
     // }
 
+    //client process yields to stream process
     sched_yield();
+    //sleep to make sure file is partially written before read begins
     sleep(5);
 
+    //this is all the example stuff that does playback
     ma_result result;
     ma_decoder decoder;
     ma_device_config deviceConfig;
@@ -87,6 +92,7 @@ int main(void)
         return -4;
     }
 
+    //allows user response to pause, resume, volume up, volume down, quit - respectively
     char input;
     while(1){
         scanf("%c",&input);

@@ -34,17 +34,24 @@ int main(void)
     listen(listenfd, 10);
 
     while(1) {
+        // Waits until connection is made, and then creates new connection
         connfd[numConnections] = accept(listenfd, (struct sockaddr*)NULL ,NULL);
 
+        // Creates child process and copies over the connection to a variable local to the child
         int PID = fork();
         int childConnfd = connfd[numConnections];
         int numChildfd = numConnections;
+
+        //Child does server work while parent goes back to listening.
         if (PID == 0) {
             while(1){
                 
+                //Open source audio file TODO: make it command line arg of client.
                 FILE *fp; 
                 fp = fopen("00602567992424_007_100 Miles and Running_USUM71815294.mp3","rb");
 
+
+                //Read in bytes from audio file and store number of bytes read in readCount
                 while(1){
                     // char buffFinished[4];
                     // snprintf(buffFinished, 4, "xyz");
@@ -53,13 +60,15 @@ int main(void)
                     int readCount = fread(buff,1,500,fp);
                     // printf("Bytes read %d \n", readCount);        
 
+                    //Send read bytes over the connection to the client if there is data to send
                     if(readCount > 0){
                         // printf("Sending \n");
                         write(childConnfd, buff, readCount);
                         continue;
                     }
+                    // Once done with sending data, decrement num connections and close the connection and kill child thread.
                     else{
-                        fprintf(stderr, "made it to read!\n");
+                        fprintf(stderr, "made it to EOF!\n");
                         numConnections--;
                         close(childConnfd);
                         sleep(1);
@@ -83,12 +92,14 @@ int main(void)
                         // break;
                     }
                 }
+                //ignore
                 numConnections--;
                 close(childConnfd);
                 sleep(1);
                 return 0;
             }
         }
+        // Parent increments connection number and goes back to listening
         else {
             fprintf(stderr, "listening thread incrementing\n");
             numConnections++;
@@ -96,6 +107,7 @@ int main(void)
         }
 
     }
+    //If 10 connections it won't accept connections for 60 seconds (wait for one of them to timeout.)
     if (numConnections == 10)
         sleep(60);
 
