@@ -36,14 +36,14 @@ int main(void)
     //create vars for communicating with stream.c
     int fd[2];
     pipe(fd);
-    char pipefd[12];
-    snprintf(pipefd,12,"%i",fd[0]);
+    char pipefd1[12];
+    snprintf(pipefd1,12,"%i",fd[1]);
     struct timeval time;
 
     //create child process and have it execute stream.c
     int PID = fork();
     if (!PID){
-        char* argv_list[] = {"./stream", "test.mp3", pipefd, NULL} ;
+        char* argv_list[] = {"./stream", "test.mp3", pipefd1, NULL} ;
         execv("./stream", argv_list);
     }   
 
@@ -53,7 +53,7 @@ int main(void)
     //sleep to make sure file is partially written before read begins, replace with start time
     char* timeBuff = calloc(1,8);
     char** ptr = &timeBuff;
-    bytesReceived = read(sockfd, timeBuff, sizeof(timeBuff));
+    read(fd[0], timeBuff, sizeof(timeBuff));
     printf("%s\n",timeBuff);
     long int startTime = strtol(timeBuff, ptr, 10);
     long int timeOfDay = -1; 

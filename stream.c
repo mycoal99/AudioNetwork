@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 
     //check that client did its job correctly
     if (argc != 3) {
-        printf("incorrect usage\nCorrect Usage: \'./stream <filename>\'");
+        printf("incorrect usage\nCorrect Usage: \'./stream <filename> <pipefd>\'");
     }
 
     //pipe stuff for talking to client.c other stuff is for connection
@@ -50,6 +50,10 @@ int main(int argc, char* argv[]) {
         printf("Unable to open file");
         return 1;
     }
+
+    char* timeBuff = calloc(1,8);
+    bytesReceived = read(sockfd, timeBuff, sizeof(timeBuff));
+    write(pipefd, timeBuff, sizeof(timeBuff));
 
     //recieve bytes from server and write to temp file
     while(1) {
