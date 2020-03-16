@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 
                 //Open source audio file TODO: make it command line arg of client.
                 FILE *fp; 
-                fp = fopen("Lofi.mp3","rb");
+                fp = fopen("Nsync.mp3","rb");
 
                 read(fd[numChildfd][0], ready, sizeof(ready));
 
