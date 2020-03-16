@@ -9,7 +9,7 @@
 
 
 
-int main(void)
+int main(int argc, char* argv[])
 {
     int listenfd;
     int connfd;
@@ -18,7 +18,9 @@ int main(void)
     int numrv;
     int numConnections = 0;
     struct timeval time;
-
+    int fd[10][2];
+    int* ready;
+    *ready = 1;
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -36,12 +38,21 @@ int main(void)
     listen(listenfd, 10);
 
     while(1) {
+
+        if (numConnections % atoi(argv[1]) == 0) {
+            for (int i = 1; i <= atoi(argv[1]); i++) {
+                write(fd[numConnections - i][1], ready, sizeof(ready));
+            }
+        }
+
         // Waits until connection is made, and then creates new connection
         connfd = accept(listenfd, (struct sockaddr*)NULL ,NULL);
 
         // Creates child process and copies over the connection to a variable local to the child
+        pipe(fd[numConnections]);
         int PID = fork();
         int childConnfd = connfd;
+        int numChildfd = numConnections;
 
         //Child does server work while parent goes back to listening.
         if (PID == 0) {
@@ -51,8 +62,10 @@ int main(void)
                 FILE *fp; 
                 fp = fopen("00602567992424_007_100 Miles and Running_USUM71815294.mp3","rb");
 
+                read(fd[numChildfd][0], ready, sizeof(ready));
+
                 gettimeofday(&time,NULL);
-                long int ms = ((time.tv_sec * 1000) + (time.tv_usec / 1000) + 4000)%10000; //Modulo used to simplify the timestamp
+                long int ms = ((time.tv_sec * 1000) + (time.tv_usec / 1000) + 8000)%10000; //Modulo used to simplify the timestamp
                 char* timeBuff = calloc(1,8);
 
                 // Convert LI to char*
