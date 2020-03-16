@@ -60,11 +60,13 @@ int main(void)
 
     //Program waits until calculated delay time stamp from server
     printf("Start time = %li\n",startTime);
-    while(timeOfDay != startTime){
+    while(!((timeOfDay <= startTime + 10) && (timeOfDay >= startTime - 10))){
         gettimeofday(&time,NULL);
         timeOfDay = ((time.tv_sec * 1000) + (time.tv_usec / 1000))%10000; //Modulo used to simplify the timestamp
-        printf("Time of day = %li\n",timeOfDay);
+        // printf("Time of day = %li\n",timeOfDay);
     }
+    // gettimeofday(&time,NULL);
+    // printf("%li\n", ((time.tv_sec * 1000) + (time.tv_usec / 1000))%10000);
 
     //this is all the example stuff that does playback
     ma_result result;

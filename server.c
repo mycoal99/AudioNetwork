@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     int numConnections = 0;
     struct timeval time;
     int fd[10][2];
-    int* ready;
+    int ready[1];
     *ready = 1;
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
     while(1) {
 
-        if (numConnections % atoi(argv[1]) == 0) {
+        if ((numConnections % atoi(argv[1]) == 0) && (numConnections != 0)) {
             for (int i = 1; i <= atoi(argv[1]); i++) {
                 write(fd[numConnections - i][1], ready, sizeof(ready));
             }
