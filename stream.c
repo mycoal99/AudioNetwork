@@ -20,8 +20,8 @@
 int main(int argc, char* argv[]) {
 
     //check that client did its job correctly
-    if (argc != 3) {
-        printf("incorrect usage\nCorrect Usage: \'./stream <filename> <pipefd>\'");
+    if (argc != 4) {
+        printf("incorrect usage\nCorrect Usage: \'./stream <filename> <pipefd> <IP Address>\'");
     }
 
     //pipe stuff for talking to client.c other stuff is for connection
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     }
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(8084); // port
-    serv_addr.sin_addr.s_addr = inet_addr("192.168.0.229");
+    serv_addr.sin_addr.s_addr = inet_addr(argv[3]);
     connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
 
     // open temp file that will serve as buffer.

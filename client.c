@@ -31,8 +31,14 @@ void data_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uin
 }
 
 
-int main(void)
+int main(int argc, char* argv[])
 {
+
+    //check that the user did its job correctly
+    if (argc != 2) {
+        printf("incorrect usage\nCorrect Usage: \'./client <IP Address>\'");
+    }
+
     //create vars for communicating with stream.c
     int fd[2];
     pipe(fd);
@@ -43,7 +49,7 @@ int main(void)
     //create child process and have it execute stream.c
     int PID = fork();
     if (!PID){
-        char* argv_list[] = {"./stream", "test.mp3", pipefd1, NULL} ;
+        char* argv_list[] = {"./stream", "test.mp3", pipefd1, argv[1], NULL} ;
         execv("./stream", argv_list);
     }   
 

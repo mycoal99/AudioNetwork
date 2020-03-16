@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 
                 //Open source audio file TODO: make it command line arg of client.
                 FILE *fp; 
-                fp = fopen("00602567992424_007_100 Miles and Running_USUM71815294.mp3","rb");
+                fp = fopen("ThousandYears.mp3","rb");
 
                 read(fd[numChildfd][0], ready, sizeof(ready));
 
@@ -69,10 +69,9 @@ int main(int argc, char* argv[])
                 char* timeBuff = calloc(1,8);
 
                 // Convert LI to char*
-                printf("%lu\n",sizeof(timeBuff[0]));
                 sprintf(timeBuff,"%li",ms);
 
-                fprintf(stderr, "Sending start time stamp: %li\n",ms);  
+                fprintf(stderr, "Sending start time stamp to connection %d: %li\n", numChildfd, ms);  
 
                 int timeSize = sizeof(timeBuff[0]);
                 int written = 0;
@@ -85,12 +84,16 @@ int main(int argc, char* argv[])
 
                 //Read in bytes from audio file and store number of bytes read in readCount
                 while(1){
+                    // char buffFinished[4];
+                    // snprintf(buffFinished, 4, "xyz");
                     unsigned char buff[500] = {0};
                     char done[2];
                     int readCount = fread(buff,1,500,fp);
+                    // printf("Bytes read %d \n", readCount);        
 
                     //Send read bytes over the connection to the client if there is data to send
                     if(readCount > 0){
+                        // printf("Sending \n");
                         write(childConnfd, buff, readCount);
                         continue;
                     }
@@ -101,8 +104,30 @@ int main(int argc, char* argv[])
                         close(childConnfd);
                         sleep(1);
                         return 0;
+                        // // fprintf(stderr, "%s\n", buffFinished);
+                        // // fprintf(stderr, "reached write q, size: %d\n", sizeof(buffFinished));
+                        // // write(childConnfd, buffFinished, sizeof(buffFinished));
+                        // fprintf(stderr, "made it to read!\n");
+                        // // fprintf(stderr, "%d\n", numConnections);
+                        // read(childConnfd, done, sizeof(done));
+                        // fprintf(stderr,"Passed Read\n");
+                        // if (!strcmp(done, "q")) {
+                        //     fprintf(stderr,"Connection %d closing.\n", numChildfd);
+                        //     close(childConnfd);
+                        //     sleep(1);
+                        //     return 0;
+                        // }
+                        // else {
+                        //     continue;
+                        // }
+                        // break;
                     }
                 }
+                //ignore
+                numConnections--;
+                close(childConnfd);
+                sleep(1);
+                return 0;
             }
         }
         // Parent increments connection number and goes back to listening
