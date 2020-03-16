@@ -58,13 +58,9 @@ int main(void)
     long int startTime = strtol(timeBuff, ptr, 10);
     long int timeOfDay = -1; 
 
-    //Program waits until calculated delay time stamp from server
-    printf("Start time = %li\n",startTime);
-    while(!((timeOfDay <= startTime + 10) && (timeOfDay >= startTime - 10))){
-        gettimeofday(&time,NULL);
-        timeOfDay = ((time.tv_sec * 1000) + (time.tv_usec / 1000))%10000; //Modulo used to simplify the timestamp
-        // printf("Time of day = %li\n",timeOfDay);
-    }
+    sleep(5);
+
+    
     // gettimeofday(&time,NULL);
     // printf("%li\n", ((time.tv_sec * 1000) + (time.tv_usec / 1000))%10000);
 
@@ -86,7 +82,7 @@ int main(void)
     deviceConfig.dataCallback      = data_callback;
     deviceConfig.pUserData         = &decoder;
 
-    printf("%llu\n",decoder.readPointer);
+    // printf("%llu\n",decoder.readPointer);
 
     if (ma_device_init(NULL, &deviceConfig, &device) != MA_SUCCESS) { //initializes device with device config
         printf("Failed to open playback device.\n");
@@ -94,12 +90,23 @@ int main(void)
         return -3;
     }
 
+
     if (ma_device_start(&device) != MA_SUCCESS) { //starts playback
         printf("Failed to start playback device.\n");
         ma_device_uninit(&device);
         ma_decoder_uninit(&decoder);
         return -4;
     }
+    ma_device_stop(&device);
+
+    //Program waits until calculated delay time stamp from server
+    printf("Start time = %li\n",startTime);
+    while(!((timeOfDay <= ((startTime + 5000)%10000) + 50) && (timeOfDay >= ((startTime + 5000)%10000) - 50))){
+        gettimeofday(&time,NULL);
+        timeOfDay = ((time.tv_sec * 1000) + (time.tv_usec / 1000))%10000; //Modulo used to simplify the timestamp
+        // printf("Time of day = %li\n",timeOfDay);
+    }
+    ma_device_start(&device);
 
     //allows user response to pause, resume, volume up, volume down, quit - respectively
     char input;

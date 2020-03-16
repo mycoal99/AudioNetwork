@@ -63,6 +63,7 @@ int main(int argc, char* argv[])
                 fp = fopen("00602567992424_007_100 Miles and Running_USUM71815294.mp3","rb");
 
                 read(fd[numChildfd][0], ready, sizeof(ready));
+                // write(childConnfd)
 
                 gettimeofday(&time,NULL);
                 long int ms = ((time.tv_sec * 1000) + (time.tv_usec / 1000) + 8000)%10000; //Modulo used to simplify the timestamp
